@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarek Ads</title>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #f1f3f7;
+        font-family: "Poppins", sans-serif;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 480px;
+        margin: 25px auto;
+        padding: 22px;
+        border-radius: 25px;
+        background: white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.09);
+        text-align: center;
+    }
+
+    img.logo {
+        width: 85px;
+        height: 85px;
+        border-radius: 18px;
+        margin-bottom: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+        font-size: 28px;
+        margin: 10px 0 5px 0;
+        font-weight: 700;
+    }
+
+    p.sub {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 25px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 16px;
+        margin-bottom: 14px;
+        border: none;
+        border-radius: 14px;
+        font-size: 17px;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .red    { background: #e53e3e; }
+    .blue   { background: #2563eb; }
+    .green  { background: #16a34a; }
+    .gold   { background: #c28c0a; }
+    .purple { background: #9333ea; }
+
+    /* FULLSCREEN AD POPUP */
+    #adModal {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.65);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        z-index: 99999;
+    }
+
+    .ad-box {
+        width: 100%;
+        max-width: 420px;
+        min-height: 240px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 18px;
+        text-align: center;
+        box-shadow: 0 0 25px rgba(0,0,0,0.25);
+        animation: popup 0.25s ease;
+    }
+
+    @keyframes popup {
+        from { transform: scale(0.8); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+
+    .closeBtn {
+        margin-top: 14px;
+        background: #ff4747;
+        padding: 10px 18px;
+        color: #fff;
+        border-radius: 10px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <img src="logo.png" class="logo">
+
+    <h1>Tarek Ads</h1>
+    <p class="sub">আপনার পছন্দের বিজ্ঞাপন ফরম্যাট নির্বাচন করুন</p>
+
+    <button class="btn red" onclick="openAd('push')">Telegram Push-style</button>
+    <button class="btn blue" onclick="openAd('embedded')">Telegram Embedded banner</button>
+    <button class="btn green" onclick="openAd('interstitial')">Telegram Interstitial banner</button>
+    <button class="btn gold" onclick="openAd('video')">Telegram Interstitial video</button>
+    <button class="btn purple" onclick="openAd('playable')">Telegram Playable ads</button>
+</div>
+
+
+<!-- FULLSCREEN POPUP -->
+<div id="adModal">
+    <div class="ad-box">
+        <h3>Ad Loading…</h3>
+        <p id="adStatus">Please wait…</p>
+
+        <button class="closeBtn" onclick="closeAd()">Close</button>
+    </div>
+</div>
+
+
+<script>
+    const adConfig = {
+        push:       { pubId: "null",     appId: "3767" },
+        embedded:   { pubId: "987925",   appId: "3767" },
+        interstitial:{ pubId: "987925",  appId: "3767" },
+        video:      { pubId: "987925",   appId: "3767" },
+        playable:   { pubId: "987925",   appId: "3767" }
+    };
+
+    function openAd(type) {
+        document.getElementById("adModal").style.display = "flex";
+        document.getElementById("adStatus").innerHTML = "Loading ad script…";
+
+        let config = adConfig[type];
+
+        // Load script
+        let s = document.createElement("script");
+        s.src = "https://richinfo.co/richpartners/telegram/js/tg-ob.js";
+        s.onload = () => {
+            if (typeof TelegramAdsController === "function") {
+                let ad = new TelegramAdsController();
+                ad.initialize({ pubId: config.pubId, appId: config.appId });
+
+                document.getElementById("adStatus").innerHTML =
+                    "Ad Loaded. It should appear now!";
+            }
+        };
+
+        s.onerror = () => {
+            document.getElementById("adStatus").innerHTML = "Failed to load ad script.";
+        };
+
+        document.head.appendChild(s);
+    }
+
+    function closeAd() {
+        document.getElementById("adModal").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
