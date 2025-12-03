@@ -6,6 +6,9 @@
     <title>RichAds - Ad Format Selector</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- RichAds পার্সোনাল JS ট্যাগ: আপনার অ্যাকাউন্ট থেকে পাওয়া ট্যাগ এখানে ইনসার্ট করুন -->
+    <!-- উদাহরণ: <script src="https://js.richads.com/YOUR_TAG.js?pubid=YOUR_PUBID&widgetid=YOUR_APPID" async></script> -->
+    <!-- পার্সোনাল ট্যাগ না থাকলে অ্যাড লোড হবে না। RichAds অ্যাকাউন্ট থেকে নিন। -->
     <style>
         /* কাস্টম ফন্ট: ইন্টার (Inter) */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -50,31 +53,31 @@
             <div class="grid grid-cols-1 gap-4">
                 
                 <!-- বাটন ১: Push-style -->
-                <button onclick="loadFormat('push', 'null', '3767', 'টেলিগ্রাম পুশ-স্টাইল')"
+                <button onclick="loadFormat('push', 'টেলিগ্রাম পুশ-স্টাইল')"
                         class="main-button primary-red text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-red-600 focus:outline-none focus:ring-4 focus:ring-red-300 transition duration-150">
                     ১/ Telegram Push-style
                 </button>
                 
                 <!-- বাটন ২: Embedded banner -->
-                <button onclick="loadFormat('embedded', '987925', '3767', 'টেলিগ্রাম এমবেডেড ব্যানার')"
+                <button onclick="loadFormat('embedded', 'টেলিগ্রাম এমবেডেড ব্যানার')"
                         class="main-button bg-blue-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition duration-150">
                    ২/ Telegram Embedded banner
                 </button>
 
                 <!-- বাটন ৩: Interstitial banner -->
-                <button onclick="loadFormat('interstitial_banner', '987925', '3767', 'টেলিগ্রাম ইন্টারস্টিশিয়াল ব্যানার')"
+                <button onclick="loadFormat('interstitial_banner', 'টেলিগ্রাম ইন্টারস্টিশিয়াল ব্যানার')"
                         class="main-button bg-green-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition duration-150">
                     ৩/ Telegram Interstitial banner
                 </button>
 
                 <!-- বাটন ৪: Interstitial video -->
-                <button onclick="loadFormat('interstitial_video', '987925', '3767', 'টেলিগ্রাম ইন্টারস্টিশিয়াল ভিডিও')"
+                <button onclick="loadFormat('interstitial_video', 'টেলিগ্রাম ইন্টারস্টিশিয়াল ভিডিও')"
                         class="main-button bg-yellow-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-yellow-700 focus:outline-none focus:ring-4 focus:ring-yellow-300 transition duration-150">
                     ৪/ Telegram Interstitial video
                 </button>
 
                 <!-- বাটন ৫: Playable ads -->
-                <button onclick="loadFormat('playable', '987925', '3767', 'টেলিগ্রাম প্লেয়েবল অ্যাডস')"
+                <button onclick="loadFormat('playable', 'টেলিগ্রাম প্লেয়েবল অ্যাডস')"
                         class="main-button bg-purple-600 text-white py-4 px-6 rounded-xl font-semibold text-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 transition duration-150">
                     ৫/ Telegram Playable ads
                 </button>
@@ -87,8 +90,8 @@
             
             <div id="loadingIndicator" class="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 rounded-lg" role="alert">
                 <p class="font-bold">বিজ্ঞাপন লোড হচ্ছে...</p>
-                <p class="text-sm mt-1">আপনার প্রদত্ত স্ক্রিপ্টগুলো এখন ইনজেক্ট করা হয়েছে। বিজ্ঞাপনটি লোড হলে এখানে প্রদর্শিত হবে।</p>
-                <p class="text-xs mt-2 text-gray-600">পাবলিশার আইডি: <span id="pubIdDisplay"></span>, অ্যাপ আইডি: <span id="appIdDisplay"></span></p>
+                <p class="text-sm mt-1">RichAds JS ট্যাগ ইনসার্ট করা হয়েছে। লাইভ টেলিগ্রাম মিনি অ্যাপে অ্যাড প্রদর্শিত হবে।</p>
+                <p class="text-xs mt-2 text-gray-600">ফরম্যাট: <span id="formatDisplay"></span> (RichAds ম্যানেজারের সাথে ফরম্যাট কাস্টমাইজ করুন)</p>
             </div>
 
             <div id="adContainer" class="mt-6 p-4 border-2 border-dashed border-gray-300 rounded-lg min-h-[200px] flex items-center justify-center text-gray-600 bg-gray-50">
@@ -98,7 +101,7 @@
                     <p class="text-sm text-gray-700 font-semibold">সমস্যা: এই প্রিভিউ (iFrame) পরিবেশে বাহ্যিক বিজ্ঞাপন ব্লক করা হচ্ছে।</p>
                     <div class="mt-3 p-3 bg-yellow-100 rounded-lg">
                         <p class="font-semibold text-yellow-800">আপনার <span id="demoFormatName" class="text-red-600 font-extrabold"></span> ফরম্যাটের বিজ্ঞাপন লোড করার জন্য এই স্থানটি প্রস্তুত।</p>
-                        <p class="text-xs mt-1 text-gray-700">কোডটি ঠিক আছে। এটি আপনার লাইভ ওয়েবসাইটে কাজ করার কথা।</p>
+                        <p class="text-xs mt-1 text-gray-700">কোডটি ঠিক আছে। লাইভ টেলিগ্রাম অ্যাপে টেস্ট করুন এবং RichAds 'Check connection' ব্যবহার করুন।</p>
                     </div>
                 </div>
             </div>
@@ -112,26 +115,16 @@
     </div>
 
     <script>
-        // বিজ্ঞাপনের কনফিগারেশন এবং নামগুলি ম্যাপ করা
-        const AD_CONFIGS = {
-            'push': { pubId: "null", appId: "3767", title: "টেলিগ্রাম পুশ-স্টাইল" },
-            'embedded': { pubId: "987925", appId: "3767", title: "টেলিগ্রাম এমবেডেড ব্যানার" },
-            'interstitial_banner': { pubId: "987925", appId: "3767", title: "টেলিগ্রাম ইন্টারস্টিশিয়াল ব্যানার" },
-            'interstitial_video': { pubId: "987925", appId: "3767", title: "টেলিগ্রাম ইন্টারস্টিশিয়াল ভিডিও" },
-            'playable': { pubId: "987925", appId: "3767", title: "টেলিগ্রাম প্লেয়েবল অ্যাডস" }
-        };
-
         const dashboardView = document.getElementById('dashboardView');
         const adView = document.getElementById('adView');
         const headerSubtitle = document.getElementById('headerSubtitle');
-        const demoAd = document.getElementById('demoAd'); // ডেমো অ্যাড এলিমেন্ট
+        const demoAd = document.getElementById('demoAd');
 
         /**
          * বাটনে ক্লিক করলে URL প্যারামিটার সেট করে পৃষ্ঠাটি রিলোড করে।
          */
-        function loadFormat(formatKey, pubId, appId, title) {
-            // নতুন পেজ খোলার জন্য URL পরিবর্তন (একটি "নতুন পেজ" সিমুলেশন)
-            const newUrl = `?format=${formatKey}&pubId=${pubId}&appId=${appId}&title=${encodeURIComponent(title)}`;
+        function loadFormat(formatKey, title) {
+            const newUrl = `?format=\( {formatKey}&title= \){encodeURIComponent(title)}`;
             window.location.href = newUrl;
         }
 
@@ -139,57 +132,7 @@
          * ড্যাশবোর্ডে ফিরে যাওয়ার জন্য URL থেকে প্যারামিটারগুলি সরিয়ে দেয়।
          */
         function goBackToDashboard() {
-            window.location.href = window.location.pathname; // URL-এ কোনো প্যারামিটার ছাড়া রিলোড
-        }
-
-        /**
-         * বিজ্ঞাপন লোড করার জন্য স্ক্রিপ্ট ইনজেক্ট করে।
-         * @param {string} pubId - বিজ্ঞাপনের পাবলিশার আইডি।
-         * @param {string} appId - বিজ্ঞাপনের অ্যাপ আইডি।
-         */
-        function injectAdScripts(pubId, appId) {
-            // ১. প্রধান স্ক্রিপ্ট লোড করা
-            const mainScript = document.createElement('script');
-            mainScript.src = "https://richinfo.co/richpartners/telegram/js/tg-ob.js";
-            document.body.appendChild(mainScript);
-
-            // ২. কন্ট্রোলার ইনিশিয়ালাইজেশন স্ক্রিপ্ট লোড করা
-            mainScript.onload = () => {
-                try {
-                    const initScript = document.createElement('script');
-                    initScript.textContent = `
-                        // স্ক্রিপ্ট ইনিশিয়ালাইজেশন: 
-                        window.TelegramAdsController = new TelegramAdsController();
-                        window.TelegramAdsController.initialize({
-                            pubId: "${pubId === 'null' ? null : pubId}",
-                            appId: "${appId}",
-                        });
-                        
-                        // ইনিশিয়ালাইজেশন সফল হলে মেসেজ আপডেট করা হচ্ছে
-                        console.log("TelegramAdsController initialized for PubID: ${pubId}, AppID: ${appId}");
-                        const loadingIndicator = document.getElementById('loadingIndicator');
-                        loadingIndicator.classList.remove('bg-indigo-100', 'border-indigo-500', 'text-indigo-700');
-                        loadingIndicator.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
-                        loadingIndicator.innerHTML = '<p class="font-bold text-green-700">বিজ্ঞাপন স্ক্রিপ্ট সফলভাবে লোড ও ইনিশিয়ালাইজ হয়েছে।</p><p class="text-sm mt-1">কিন্তু নিরাপত্তা সীমাবদ্ধতার কারণে লাইভ বিজ্ঞাপন প্রদর্শিত হচ্ছে না।</p>';
-
-                        // ডেমো অ্যাডটিকে দৃশ্যমান করা হচ্ছে 
-                        document.getElementById('demoAd').classList.remove('hidden');
-
-                } catch (e) {
-                    console.log("Error initializing TelegramAdsController:", e);
-                    const loadingIndicator = document.getElementById('loadingIndicator');
-                    loadingIndicator.classList.remove('bg-indigo-100', 'border-indigo-500', 'text-indigo-700');
-                    loadingIndicator.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
-                    loadingIndicator.innerHTML = '<p class="font-bold text-red-700">স্ক্রিপ্ট ইনিশিয়ালাইজেশনে ত্রুটি (নিরাপত্তা সীমাবদ্ধতা)।</p><p class="text-sm mt-1">এই পরিবেশে বাহ্যিক বিজ্ঞাপন লোড হচ্ছে না।</p>';
-                    document.getElementById('demoAd').classList.remove('hidden');
-                }
-            };
-            mainScript.onerror = () => {
-                const loadingIndicator = document.getElementById('loadingIndicator');
-                loadingIndicator.classList.add('bg-red-100', 'border-red-500', 'text-red-700');
-                loadingIndicator.innerHTML = '<p class="font-bold text-red-700">প্রধান স্ক্রিপ্ট লোড হয়নি।</p><p class="text-sm mt-1">অনুগ্রহ করে URL চেক করুন।</p>';
-                document.getElementById('demoAd').classList.remove('hidden');
-            };
+            window.location.href = window.location.pathname;
         }
 
         /**
@@ -198,18 +141,15 @@
         function initApp() {
             const params = new URLSearchParams(window.location.search);
             const format = params.get('format');
-            const pubId = params.get('pubId');
-            const appId = params.get('appId');
             const title = params.get('title');
 
-            // Header Subtitle আপডেট করা
             if (title) {
                 headerSubtitle.textContent = "বিজ্ঞাপন লোডিং স্টেটাস";
             } else {
                 headerSubtitle.textContent = "আপনার পছন্দের বিজ্ঞাপন ফরম্যাট নির্বাচন করুন";
             }
 
-            if (format && pubId && appId && title) {
+            if (format && title) {
                 // বিজ্ঞাপন লোডার ভিউ দেখাও
                 dashboardView.classList.add('hidden');
                 adView.classList.remove('hidden');
@@ -217,15 +157,17 @@
 
                 // UI আপডেট করো
                 document.getElementById('adFormatTitle').textContent = title;
-                document.getElementById('pubIdDisplay').textContent = pubId;
-                document.getElementById('appIdDisplay').textContent = appId;
+                document.getElementById('formatDisplay').textContent = format;
                 document.getElementById('demoFormatName').textContent = title; 
                 
-                // শুরুতে ডেমো অ্যাড লুকিয়ে রাখা হলো, স্ক্রিপ্ট ইনিট হওয়ার পর দেখাবে
-                demoAd.classList.add('hidden'); 
+                // ডেমো অ্যাড দেখাও (প্রিভিউতে লাইভ অ্যাড লোড হয় না)
+                demoAd.classList.remove('hidden');
 
-                // স্ক্রিপ্ট ইনজেক্ট করো
-                injectAdScripts(pubId, appId);
+                // লোডিং ইন্ডিকেটর আপডেট (সফল মেসেজ, যেহেতু JS ট্যাগ স্ট্যাটিক)
+                const loadingIndicator = document.getElementById('loadingIndicator');
+                loadingIndicator.classList.remove('bg-indigo-100', 'border-indigo-500', 'text-indigo-700');
+                loadingIndicator.classList.add('bg-green-100', 'border-green-500', 'text-green-700');
+                loadingIndicator.innerHTML = '<p class="font-bold text-green-700">RichAds JS ট্যাগ সফলভাবে ইনসার্ট হয়েছে।</p><p class="text-sm mt-1">লাইভ টেলিগ্রাম মিনি অ্যাপে অ্যাড প্রদর্শিত হবে। প্রিভিউতে নিরাপত্তা সীমাবদ্ধতা আছে।</p>';
 
             } else {
                 // ড্যাশবোর্ড ভিউ দেখাও
@@ -242,4 +184,3 @@
 
 </body>
 </html>
-
