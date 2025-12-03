@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<title>RichAds WebApp</title>
+
+<!-- RichAds Telegram SDK - Initialization in Head as recommended by the service -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+<script>
+    // Initialize the RichAds Controller with the provided IDs
+    window.TelegramAdsController = new TelegramAdsController();
+    window.TelegramAdsController.initialize({
+      pubId: "987925", // User-provided pubId
+      appId: "3767",  // User-provided appId
+    });
+    console.log("RichAds Telegram SDK Initialized.");
+</script>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', Arial, sans-serif;
+    }
+
+    body {
+        background: #0d0d0d;
+        min-height: 100vh;
+        overflow-y: auto; /* Allow scrolling if content overflows */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Start content from the top */
+        padding-top: 50px;
+    }
+
+    .app-container {
+        width: 90%;
+        max-width: 420px;
+        padding: 20px;
+        text-align: center;
+        background: #1c1c1c;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 {
+        color: #f0f0f0;
+        margin-bottom: 30px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 18px;
+        margin: 12px 0;
+        background: #1a73e8;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        box-shadow: 0 4px 10px rgba(26, 115, 232, 0.4);
+    }
+
+    .btn:hover {
+        background: #0f64d8;
+    }
+
+    .btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 5px rgba(26, 115, 232, 0.6);
+    }
+
+    /* FULLSCREEN AD OVERLAY (For Placeholder/Loading states) */
+    .ad-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        color: white;
+        font-size: 20px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer; /* Allows closing on tap/click */
+    }
+    
+    .ad-overlay small {
+        margin-top: 15px;
+        opacity: 0.7;
+        font-size: 14px;
+        display: block;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="app-container">
+    <h2>RichAds - Demo</h2>
+
+    <button class="btn" onclick="showAd('Push Style Ad')">Telegram Push-style</button>
+    <button class="btn" onclick="showAd('Embedded Banner Ad')">Telegram Embedded banner</button>
+    <button class="btn" onclick="showAd('Interstitial Banner Ad')">Telegram Interstitial banner</button>
+    <button class="btn" onclick="showAd('Video Ad')">Telegram Interstitial video</button>
+    <button class="btn" onclick="showAd('Playable Ad')">Telegram Playable ads</button>
+</div>
+
+<!-- FULLSCREEN AD (Used for Placeholder and Loading messages) -->
+<div class="ad-overlay" id="adOverlay" onclick="hideAd()">
+    <div id="adText">Loading Ad...</div>
+</div>
+
+<script>
+    /**
+     * Shows either the actual RichAds Interstitial ad or a demo placeholder.
+     * @param {string} ad_type - The type of ad requested.
+     */
+    function showAd(ad_type) {
+        const overlay = document.getElementById("adOverlay");
+        const adText = document.getElementById("adText");
+
+        if (ad_type === 'Interstitial Banner Ad') {
+            
+            // 1. Show a Loading message using the manual overlay
+            adText.innerHTML = "RichAds Interstitial লোড হচ্ছে...";
+            overlay.style.display = "flex";
+            overlay.onclick = null; // Disable closing the loading screen by clicking
+
+            if (window.TelegramAdsController) {
+                console.log("Attempting to show RichAds Interstitial Banner...");
+
+                // 2. Call the RichAds SDK method to display the fullscreen ad
+                window.TelegramAdsController.showInterstitial({
+                    onOpen: () => {
+                        // The actual ad has opened. Hide the manual loading screen.
+                        console.log('RichAds Interstitial Ad opened. Hiding loading overlay.');
+                        overlay.style.display = "none";
+                    },
+                    onClose: () => {
+                        console.log('RichAds Interstitial Ad closed.');
+                        // Add confirmation message or state reset here if needed.
+                    },
+                    onError: (error) => {
+                        console.error('RichAds Interstitial Ad failed to load:', error);
+                        // If it fails, show an error message using the manual overlay.
+                        adText.innerHTML = "RichAds লোড হতে ব্যর্থ হয়েছে।<br><br>ডেমো প্লেসহোল্ডার দেখানো হচ্ছে।";
+                        overlay.style.display = "flex"; 
+                        overlay.onclick = hideAd; // Re-enable closing the manual overlay
+                    }
+                });
+            } else {
+                // Fallback if the SDK is not loaded/initialized
+                console.error("RichAds SDK (TelegramAdsController) not initialized.");
+                adText.innerHTML = "SDK লোড হয়নি।<br><br>ডেমো প্লেসহোল্ডার দেখানো হচ্ছে।";
+                overlay.style.display = "flex";
+                overlay.onclick = hideAd;
+            }
+        } else {
+            // Placeholder logic for all other ad types (as requested by the user)
+            console.log("Showing Demo Placeholder for:", ad_type);
+            adText.innerHTML = ad_type + "<br><br>ডেমো প্লেসহোল্ডার অ্যাড দেখানো হচ্ছে...";
+            adText.innerHTML += "<small>(বন্ধ করতে স্ক্রিনে ক্লিক করুন)</small>";
+            overlay.style.display = "flex";
+            overlay.onclick = hideAd; // Enable closing the manual overlay
+        }
+    }
+
+    /**
+     * Hides the custom ad overlay (only used for placeholders/error messages).
+     */
+    function hideAd() {
+        document.getElementById("adOverlay").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
+
