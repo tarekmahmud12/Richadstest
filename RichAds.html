@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<title>RichAds Telegram WebApp — Demo</title>
+
+<!-- 1) Telegram WebApp SDK (load first) -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- 2) RichAds SDK -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
+<script>
+/*
+  NOTES:
+  - Ensure Telegram WebApp opens this page inside Telegram (t.me/ or via bot).
+  - RichAds pubId/appId: change if you have other values.
+*/
+
+(function initAll(){
+
+  // Initialize Telegram WebApp
+  if(window.Telegram && window.Telegram.WebApp){
+    window.Telegram.WebApp.ready();   // signal ready
+    // Optionally expand view in supported clients
+    try { window.Telegram.WebApp.expand(); } catch(e){}
+  }
+
+  // Initialize RichAds controller (wrap with try/catch)
+  try {
+    window.TelegramAdsController = new TelegramAdsController();
+    window.TelegramAdsController.initialize({
+      pubId: "987925",   // change to your pubId if needed
+      appId: "3767"
+    });
+  } catch(e){
+    console.warn("RichAds SDK init failed:", e);
+  }
+
+})();
+</script>
+
+<style>
+  :root{ --bg:#0d0d0d; --card:#1c1c1c; --accent:#1a73e8; --muted:#bdbdbd; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:#fff;
+    font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:28px 12px;
+  }
+  .app{
+    width:100%;
+    max-width:460px;
+    background:var(--card);
+    border-radius:14px;
+    padding:18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+  }
+  header{display:flex;gap:12px;align-items:center}
+  .avatar{
+    width:56px;height:56px;border-radius:12px;background:#111;
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);
+    font-size:20px;
+  }
+  .title{flex:1}
+  h1{font-size:18px;margin:0 0 4px 0}
+  p.sub{margin:0;color:var(--muted);font-size:13px}
+
+  .welcome{
+    margin-top:14px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    font-size:14px;color:#fff;
+  }
+
+  .controls{margin-top:14px;display:flex;flex-direction:column;gap:10px}
+  .btn{
+    width:100%;padding:14px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:600;font-size:15px;
+    box-shadow:0 6px 14px rgba(26,115,232,0.2);cursor:pointer;
+  }
+  .hint{margin-top:10px;font-size:13px;color:var(--muted)}
+
+  /* Banner container */
+  #rich-banner{margin-top:14px;border-radius:10px;min-height:90px;background:#121212;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px}
+
+  /* overlay for loading / errors */
+  #overlay{
+    position:fixed;left:0;top:0;width:100vw;height:100vh;display:none;
+    background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px;
+    color:#fff;text-align:center;
+  }
+  #overlay .box{max-width:420px}
+  #overlay small{display:block;color:#cfcfcf;margin-top:8px;font-size:13px}
+  @media (max-width:420px){
+    body{padding:18px 8px}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" role="application" aria-label="RichAds Demo">
+  <header>
+    <div class="avatar" id="avatar">—</div>
+    <div class="title">
+      <h1 id="username">Guest</h1>
+      <p class="sub" id="user-username">@guest</p>
+    </div>
+  </header>
+
+  <div class="welcome" id="welcome">
+    Welcome! Loading your Telegram info...
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="showAd('push')">Telegram Push-style</button>
+    <button class="btn" onclick="showAd('banner')">Embedded Banner (Inline)</button>
+    <button class="btn" onclick="showAd('interstitial')">Interstitial Banner</button>
+    <button class="btn" onclick="showAd('video')">Interstitial Video</button>
+    <button class="btn" onclick="showAd('playable')">Playable Ad</button>
+  </div>
+
+  <!-- Embedded banner placeholder (SDK will fill) -->
+  <div id="rich-banner">Embedded banner: will load here</div>
+  <p class="hint">Tip: Open this page inside Telegram mobile app/web to get your Telegram name automatically.</p>
+</div>
+
+<!-- overlay -->
+<div id="overlay" onclick="hideOverlay()" role="dialog" aria-hidden="true">
+  <div class="box" id="overlayText">Loading...</div>
+</div>
+
+<script>
+/* ---------- Utility overlay ---------- */
+function showOverlay(text){
+  const o=document.getElementById('overlay'); document.getElementById('overlayText').innerHTML=text;
+  o.style.display='flex'; o.setAttribute('aria-hidden','false');
+}
+function hideOverlay(){ const o=document.getElementById('overlay'); o.style.display='none'; o.setAttribute('aria-hidden','true'); }
+
+/* ---------- Get Telegram user info and show welcome ---------- */
+function updateUserFromTelegram(){
+  // safe checks
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if(!tg){
+    // Not opened via Telegram WebApp environment
+    document.getElementById('username').innerText = 'Guest';
+    document.getElementById('user-username').innerText = '';
+    document.getElementById('avatar').innerText = 'G';
+    document.getElementById('welcome').innerText = 'Welcome! Open this page inside Telegram (via bot) to show your Telegram name.';
+    return;
+  }
+
+  // init / ready already called in head script, but defensively call ready
+  try { tg.ready(); } catch(e){}
+
+  // Get user safely (initDataUnsafe may exist)
+  const initUnsafe = tg.initDataUnsafe || {};
+  const user = initUnsafe.user || tg.initData && tg.initData.user || null;
+
+  // Alternative: try parse from initDataUnsafe
+  let displayName = 'Guest';
+  let usernameHandle = '';
+  if(user){
+    displayName = user.first_name ? user.first_name : (user.username ? user.username : 'Guest');
+    if(user.last_name) displayName += ' ' + user.last_name;
+    usernameHandle = user.username ? ('@' + user.username) : '';
+    // avatar: show first letter(s)
+    const initials = (user.first_name ? user.first_name[0] : 'G') + (user.last_name ? user.last_name[0] : '');
+    document.getElementById('avatar').innerText = initials.toUpperCase();
+  } else {
+    // fallback: sometimes initDataUnsafe is in window.Telegram.WebApp.initDataUnsafe
+    try {
+      const raw = window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe;
+      if(raw && raw.user){ 
+        const u = raw.user;
+        displayName = (u.first_name || '') + (u.last_name ? ' ' + u.last_name : '');
+        usernameHandle = u.username ? ('@' + u.username) : '';
+        const initials = (u.first_name?u.first_name[0]:'G') + (u.last_name?u.last_name[0]:'');
+        document.getElementById('avatar').innerText = initials.toUpperCase();
+      }
+    } catch(e){}
+  }
+
+  document.getElementById('username').innerText = displayName || 'Guest';
+  document.getElementById('user-username').innerText = usernameHandle;
+  document.getElementById('welcome').innerText = `Welcome, ${displayName || 'Guest'} — শুভাগত! আপনি এখন WebApp এ আছেন।`;
+}
+
+/* Call once on load */
+updateUserFromTelegram();
+
+/* Also listen for theme changes or other events (optional) */
+if(window.Telegram && window.Telegram.WebApp){
+  try {
+    window.Telegram.WebApp.onEvent('themeChanged', function(){
+      // Could update styling if desired
+    });
+  } catch(e){}
+}
+
+/* ---------- RichAds interaction functions ---------- */
+function loadBannerInline(){
+  // Attempt to show banner in #rich-banner
+  const containerId = 'rich-banner';
+  try {
+    if(!window.TelegramAdsController) throw('SDK not ready');
+    // showBanner might be synchronous (SDK will inject content)
+    window.TelegramAdsController.showBanner(containerId);
+    // if SDK does not fill quickly, show message
+    document.getElementById(containerId).innerText = 'Banner loaded (if inventory available).';
+  } catch(err){
+    console.warn('Banner error', err);
+    document.getElementById(containerId).innerText = 'Banner not available.';
+  }
+}
+
+function showAd(type){
+  if(!window.TelegramAdsController){
+    showOverlay("Ads SDK not initialized. Please check network or SDK script.");
+    setTimeout(hideOverlay,1500);
+    return;
+  }
+
+  if(type === 'push'){
+    showOverlay('Loading Push-style ad...');
+    try {
+      window.TelegramAdsController.showObAd({
+        onOpen: ()=> hideOverlay(),
+        onClose: ()=> {},
+        onError: (e)=> { showOverlay('Push Ad not available'); setTimeout(hideOverlay,1500); }
+      });
+    } catch(e){
+      showOverlay('Push show failed'); setTimeout(hideOverlay,1500);
+    }
+    return;
+  }
+
+  if(type === 'banner'){
+    showOverlay('Loading Embedded banner...');
+    setTimeout(()=>{ loadBannerInline(); hideOverlay(); }, 800);
+    return;
+  }
+
+  if(type === 'interstitial'){
+    showOverlay('Loading Interstitial...');
+    try {
+      window.TelegramAdsController.showInterstitial({
+        onOpen: ()=> hideOverlay(),
+        onClose: ()=> {},
+        onError: ()=> { showOverlay('No Interstitial available'); setTimeout(hideOverlay,1500); }
+      });
+    } catch(e){
+      showOverlay('Interstitial show failed'); setTimeout(hideOverlay,1500);
+    }
+    return;
+  }
+
+  if(type === 'video'){
+    showOverlay('Loading Video Ad...');
+    try {
+      window.TelegramAdsController.showVideo({
+        onOpen: ()=> hideOverlay(),
+        onClose: ()=> {},
+        onError: ()=> { showOverlay('No Video available'); setTimeout(hideOverlay,1500); }
+      });
+    } catch(e){
+      showOverlay('Video show failed'); setTimeout(hideOverlay,1500);
+    }
+    return;
+  }
+
+  if(type === 'playable'){
+    showOverlay('Loading Playable Ad...');
+    try {
+      window.TelegramAdsController.showPlayable({
+        onOpen: ()=> hideOverlay(),
+        onClose: ()=> {},
+        onError: ()=> { showOverlay('No Playable available'); setTimeout(hideOverlay,1500); }
+      });
+    } catch(e){
+      showOverlay('Playable show failed'); setTimeout(hideOverlay,1500);
+    }
+    return;
+  }
+}
+
+/* Try to auto-load inline banner once when page is ready */
+window.addEventListener('load', function(){
+  // small delay to let SDK init
+  setTimeout(()=> {
+    try { loadBannerInline(); } catch(e){}
+  }, 900);
+});
+</script>
+
+</body>
+</html>
