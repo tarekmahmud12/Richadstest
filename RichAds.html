@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta charset="UTF-8">
+<title>RichAds WebApp</title>
+
+<!-- RichAds Telegram SDK -->
+<script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', Arial, sans-serif; }
+    body { background: #0d0d0d; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding-top: 50px; }
+    .app-container { width: 90%; max-width: 420px; padding: 20px; text-align: center; background: #1c1c1c; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    h2 { color: #f0f0f0; margin-bottom: 30px; font-weight: 700; }
+    .btn { width: 100%; padding: 18px; margin: 12px 0; background: #1a73e8; color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn:hover { background: #0f64d8; }
+    .btn:active { transform: scale(0.98); }
+    .ad-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; color: white; font-size: 20px; padding: 20px; text-align: center; cursor: pointer; }
+    .ad-overlay small { margin-top: 15px; opacity: 0.7; font-size: 14px; display: block; }
+</style>
+</head>
+
+<body>
+
+<div class="app-container">
+    <h2>RichAds - Demo</h2>
+    <button class="btn" onclick="showAd('Push Style Ad')">Telegram Push-style</button>
+    <button class="btn" onclick="showAd('Embedded Banner Ad')">Telegram Embedded banner</button>
+    <button class="btn" onclick="showAd('Interstitial Banner Ad')">Telegram Interstitial banner</button>
+    <button class="btn" onclick="showAd('Video Ad')">Telegram Interstitial video</button>
+    <button class="btn" onclick="showAd('Playable Ad')">Telegram Playable ads</button>
+</div>
+
+<div class="ad-overlay" id="adOverlay" onclick="hideAd()">
+    <div id="adText">Loading Ad...</div>
+</div>
+
+<script>
+    // SDK রেডি হওয়ার জন্য ওয়েট করা হচ্ছে
+    let adsReady = false;
+
+    window.addEventListener('TelegramAdsControllerReady', function () {
+        console.log("RichAds SDK সম্পূর্ণ লোড হয়েছে");
+
+        window.TelegramAdsController.initialize({
+            pubId: "987925",     // ← এখানে তোমার আসল pubId বসাও (null রাখবে না)
+            appId: "3767"        // ← তোমার আসল appId
+        });
+
+        adsReady = true;
+        console.log("RichAds ইনিশিয়ালাইজ সম্পূর্ণ হয়েছে");
+    });
+
+    // যদি SDK 10 সেকেন্ডেও লোড না হয় তাহলে এরর দেখাবে
+    setTimeout(() => {
+        if (!adsReady && !window.TelegramAdsController) {
+            console.error("RichAds SDK লোড হয়নি ১০ সেকেন্ডের মধ্যে");
+        }
+    }, 10000);
+
+    function showAd(ad_type) {
+        const overlay = document.getElementById("adOverlay");
+        const adText = document.getElementById("adText");
+
+        if (ad_type === 'Interstitial Banner Ad') {
+            if (!adsReady || !window.TelegramAdsController) {
+                adText.innerHTML = "RichAds SDK লোড হয়নি!<br><br>ইন্টারনেট চেক করো অথবা RichAds ড্যাশবোর্ডে টেস্ট ইউজার যোগ করো।";
+                overlay.style.display = "flex";
+                overlay.onclick = hideAd;
+                return;
+            }
+
+            adText.innerHTML = "RichAds Interstitial লোড হচ্ছে...";
+            overlay.style.display = "flex";
+            overlay.onclick = null;
+
+            window.TelegramAdsController.showInterstitial({
+                onOpen: () => {
+                    console.log("অ্যাড ওপেন হয়েছে");
+                    overlay.style.display = "none";
+                },
+                onClose: () => {
+                    console.log("অ্যাড বন্ধ হয়েছে");
+                },
+                onError: (err) => {
+                    console.error("RichAds Error:", err);
+                    let msg = "অ্যাড লোড হয়নি।<br><br>";
+                    if (err.code === 1) msg += "তুমি টেস্ট ইউজার লিস্টে নেই।";
+                    else if (err.code === 2) msg += "অ্যাপ/ডোমেইন approve হয়নি।";
+                    else msg += "এরর কোড: " + err.code;
+                    adText.innerHTML = msg + "<br><small>ট্যাপ করে বন্ধ করো</small>";
+                    overlay.style.display = "flex";
+                    overlay.onclick = hideAd;
+                }
+            });
+
+        } else {
+            adText.innerHTML = ad_type + "<br><br>ডেমো প্লেসহোল্ডার অ্যাড...<small>(বন্ধ করতে ট্যাপ করো)</small>";
+            overlay.style.display = "flex";
+            overlay.onclick = hideAd;
+        }
+    }
+
+    function hideAd() {
+        document.getElementById("adOverlay").style.display = "none";
+    }
+</script>
+
+</body>
+</html>
